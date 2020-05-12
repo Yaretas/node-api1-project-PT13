@@ -1,6 +1,6 @@
 // Similar to import express from express
 const express = require("express");
-const shortid = require("shortid"); // library that will generate id's
+const shortId = require("shortid"); // library that will generate id's
 
 const server = express();
 
@@ -18,14 +18,17 @@ server.get("/", (req, res) => {
 server.post("/api/users", (req, res) => {
   //axios.post(/api/users, data) <--- The data shows up as the req.body on the server
   const userData = req.body;
-  const { name, bio } = req.params;
+  const { name, bio } = req.body;
+
+  userData.id = shortId.generate();
 
   if (!name || !bio) {
     res
       .status(400)
       .json({ errorMessage: "Please provide name and bio for the user." });
   } else {
-    res.status(201).json(users);
+    users.push(userData);
+    res.status(201).json(userData);
   }
 });
 
@@ -34,9 +37,23 @@ server.post("/api/users", (req, res) => {
 server.get("/api/users", (req, res) => {
   res.status(201).json(users);
 });
+
 // --- GET	/api/users/:id	Returns the user object with the specified id.
 
-server.get("/api/users/:id", (req, res) => {});
+server.get("/api/users/:id", (req, res) => {
+  const { id } = req.params;
+
+  const userId = users.find((user) => user.id === id);
+
+  if (userId) {
+    res.status(200).json(userId);
+  } else {
+    res
+      .status(400)
+      .json({ message: "The user with the specified ID does not exist." });
+  }
+});
+
 // --- DELETE	/api/users/:id	Removes the user with the specified id and returns the deleted user.
 
 server.delete("/api/users/:id", (req, res) => {
@@ -59,6 +76,20 @@ server.delete("/api/users/:id", (req, res) => {
   }
 });
 // --- PATCH	/api/users/:id	Updates the user with the specified id using data from the request body. Returns the modified user
+
+server.put("/api/users/:id", (req, res) => {
+  const { id } = req.params;
+  const update = req.body;
+
+  const found = users.find((user) => user.id === id);
+
+  if (found) {
+    users.push(update);
+    res.status(200).json(update);
+  } else {
+    res.status(404).json({ message: "ser with specified id does not exist." });
+  }
+});
 
 // ====================================================================
 // to run the server use: npm run server after you install nodemon
